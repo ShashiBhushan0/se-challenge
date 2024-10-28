@@ -16,6 +16,8 @@ import (
 
 func main() {
 
+	grpc_port := "8011"
+
 	reader := bufio.NewReader(os.Stdin)
 	startTime := int64(0)
 	var err error
@@ -84,18 +86,17 @@ func main() {
 	}
 
 	var conn *grpc.ClientConn
-	conn, err = grpc.NewClient(":8009", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err = grpc.NewClient(":"+grpc_port, grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 	if err != nil {
 		log.Fatal("Cannot connect", err)
 	}
-	fmt.Println("May be connected")
 	defer conn.Close()
 	agg := aggregator.NewTimeAggregatorServiceClient(conn)
 	queryRquest := aggregator.QueryRequest{Start: startTime, End: endTime, Window: window, Aggregation: aggregation}
 	resp, err := agg.QueryData(context.Background(), &queryRquest)
 	if err != nil {
-		log.Fatal("Query Failed")
+		log.Fatal("Query Failed", err)
 	}
 	for _, data := range resp.Data {
 		fmt.Println(data)

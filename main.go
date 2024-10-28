@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 	"time"
 
 	"database/sql"
@@ -44,8 +45,9 @@ func StartService() {
 
 	lastFetchTime := bootstrapData(db)
 	go keepUpdatingData(db, lastFetchTime)
+	grpc_port := os.Getenv("GRPC_PORT")
 
-	lis, err := net.Listen("tcp", ":8009")
+	lis, err := net.Listen("tcp", ":"+grpc_port)
 	if err != nil {
 		log.Fatal("Listen failed")
 	}
@@ -164,7 +166,8 @@ func getTimeData(startDate time.Time, endDate time.Time) SeriesResponse {
 func getDbConnection() *sql.DB {
 	// Create a database connection
 	time.Sleep(10 * time.Second)
-	connStr := "postgres://shashi:mysecretpassword@postgres:5432/postgres?sslmode=disable"
+	// connStr := "postgres://shashi:mysecretpassword@postgres:5432/postgres?sslmode=disable"
+	connStr := "postgres://" + os.Getenv("POSTGRES_USER") + ":" + os.Getenv("POSTGRES_PASSWORD") + "@postgres:" + os.Getenv("POSTGRES_PORT") + "/" + os.Getenv("POSTGRES_DB") + "?sslmode=disable"
 	var db *sql.DB
 	var err error
 

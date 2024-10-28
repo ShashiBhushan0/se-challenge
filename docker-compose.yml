@@ -5,12 +5,16 @@ services:
     # build: .
     image: my-grpc-server:latest
     ports:
-      - "8009:8009"
+      - "8011:8011"
     depends_on:
       - postgres
     environment:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
+      GRPC_PORT: 8011
+      POSTGRES_USER: shashi
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_DB: postgres
     healthcheck:
       test: ["CMD", "sleep", "10"]
       interval: 10s
@@ -26,7 +30,5 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - /c/Users/shash/postgresmount:/var/lib/postgresql/data
+      - /c/postgresmount:/var/lib/postgresql/data
 
-# volumes:
-#   postgres_data:

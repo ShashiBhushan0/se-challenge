@@ -16,10 +16,5 @@ FROM alpine:latest
 # Copy the built binary
 COPY --from=builder /app/app .
 
-# Expose the port
-EXPOSE 8009
-ENV POSTGRES_HOST postgres
-ENV POSTGRES_PORT 5432
-
 # Start the server
 CMD ["./app"]
