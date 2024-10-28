@@ -85,3 +85,4 @@ This API provides time-series data for a specific asset. The API returns data po
 - **end**: The end timestamp for the data range (ISO 8601 format).
 
 You can use this API to retrieve historical data during the initial bootstrapping process as well as during regular intervals (every 5 minutes) to keep your database updated with the latest time-series data.
+

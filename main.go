@@ -1,4 +1,4 @@
-package main
+package client
 
 import (
 	"encoding/json"
@@ -31,7 +31,7 @@ type SeriesResponse struct {
 	Result []DataPoint `json:"result"`
 }
 
-func main1() {
+func main() {
 	fmt.Println("Starting my grpc server")
 	time.Sleep(10 * time.Second)
 	StartService()
