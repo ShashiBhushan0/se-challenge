@@ -24,10 +24,10 @@ func (s *Server) query(startTime int64, endTime int64, aggregationWindow string,
 	timeDiff := int64(0)
 	val, err := strconv.ParseInt(timeValue, 10, 64)
 	if err != nil {
-		fmt.Println("Parsing error")
+		fmt.Println("Parsing error", err)
 	}
 
-	switch timeType {
+	switch strings.ToLower(timeType) {
 	case "m":
 		timeDiff += val * 60
 	case "h":
@@ -44,13 +44,15 @@ func (s *Server) query(startTime int64, endTime int64, aggregationWindow string,
 		fmt.Println(queryString)
 		resultRows, err := s.DB.Query(queryString)
 		if err != nil {
-			fmt.Println("Query Failed")
+			fmt.Println("Query Failed", err)
+			continue
 		}
 		defer resultRows.Close()
 		for resultRows.Next() {
 			var val sql.NullFloat64
 			if err := resultRows.Scan(&val); err != nil {
-				fmt.Println("SQL rows Scan Failed")
+				fmt.Println("SQL rows Scan Failed", err)
+				continue
 			}
 			result := val.Float64
 			fmt.Println("Result = ", int64(val.Float64))
@@ -72,7 +74,7 @@ func (s *Server) QueryData(ctx context.Context, queryRequest *QueryRequest) (*Qu
 
 	qresp, err := s.query(startTime, endTime, aggregationWindow, aggregationType)
 	if err != nil {
-		log.Fatal("Query Failed")
+		log.Fatal("Query Failed", err)
 	}
 
 	return qresp, nil

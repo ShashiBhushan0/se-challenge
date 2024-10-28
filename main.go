@@ -42,7 +42,7 @@ func StartService() {
 
 	lis, err := net.Listen("tcp", ":"+grpc_port)
 	if err != nil {
-		log.Fatal("Listen failed")
+		log.Fatal("Listen failed", err)
 	}
 	grpcServer := grpc.NewServer()
 
@@ -50,7 +50,7 @@ func StartService() {
 	aggregator.RegisterTimeAggregatorServiceServer(grpcServer, service)
 	err = grpcServer.Serve(lis)
 	if err != nil {
-		log.Fatal("Server failed")
+		log.Fatal("Server failed", err)
 	}
 	fmt.Printf("Done!")
 }
@@ -90,7 +90,7 @@ func bootstrapData(db *sql.DB) time.Time {
 	for resultRows.Next() {
 		var val sql.NullInt64
 		if err := resultRows.Scan(&val); err != nil {
-			fmt.Println("SQL rows Scan Failed")
+			fmt.Println("SQL rows Scan Failed", err)
 			break
 		}
 		if val.Int64 != 0 {
@@ -148,7 +148,7 @@ func getTimeData(startDate time.Time, endDate time.Time) SeriesResponse {
 	}
 	err = json.NewDecoder(resp.Body).Decode(&data)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("Error: Failed", err)
 	}
 	return data
 }

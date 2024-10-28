@@ -54,7 +54,8 @@ func main() {
 		timeType := text[len(text)-1:]
 		_, err := strconv.ParseInt(timeValue, 10, 64)
 		if err != nil {
-			fmt.Println("Parsing error")
+			fmt.Println("Invalid. Please retry")
+			continue
 		}
 
 		switch timeType {
