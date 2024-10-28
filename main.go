@@ -16,13 +16,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-// type SeriesResponse struct {
-// 	// Add any specific fields you expect in the response here
-// 	// based on the API documentation. For example:
-// 	// Timestamps []time.Time `json:"timestamps"`
-// 	// Values     []float64  `json:"values"`
-// }
-
 type DataPoint struct {
 	Time  int64   `json:"time"`
 	Value float64 `json:"value"`
@@ -95,7 +88,6 @@ func bootstrapData(db *sql.DB) time.Time {
 	defer resultRows.Close()
 	lastTimestamp := currentTime.AddDate(-2, 0, 0)
 	for resultRows.Next() {
-		// var val sql.NullFloat64
 		var val sql.NullInt64
 		if err := resultRows.Scan(&val); err != nil {
 			fmt.Println("SQL rows Scan Failed")
@@ -121,8 +113,6 @@ func bootstrapData(db *sql.DB) time.Time {
 }
 
 func getTimeData(startDate time.Time, endDate time.Time) SeriesResponse {
-
-	// url := "https://api.edgecomenergy.net/core/asset/3662953a-1396-4996-a1b6-99a0c5e7a5de/series?start=2024-09-13T00:00:00&end=2024-09-17T00:00:00"
 
 	var data SeriesResponse
 
@@ -166,7 +156,6 @@ func getTimeData(startDate time.Time, endDate time.Time) SeriesResponse {
 func getDbConnection() *sql.DB {
 	// Create a database connection
 	time.Sleep(10 * time.Second)
-	// connStr := "postgres://shashi:mysecretpassword@postgres:5432/postgres?sslmode=disable"
 	connStr := "postgres://" + os.Getenv("POSTGRES_USER") + ":" + os.Getenv("POSTGRES_PASSWORD") + "@postgres:" + os.Getenv("POSTGRES_PORT") + "/" + os.Getenv("POSTGRES_DB") + "?sslmode=disable"
 	var db *sql.DB
 	var err error

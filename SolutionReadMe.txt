@@ -1,4 +1,5 @@
 This gRPC server will bootstrap the data for last 2 years. In the event of service restart it will fetch data from the last pulled data.
+api returns the times in epoch seconds.
 
 Steps to run the project
 1.  Update docker-compose.yml for the following
@@ -8,6 +9,8 @@ Steps to run the project
 3.  $ docker-compose up -d
 
 In order to test run the sample client
+The client start time and end time are accepted as epoch seconds. You can use https://www.epochconverter.com/ for easy conversions
+
 example.
 $ go run .\sampleclient\client.go
 Enter start time : 1727787000

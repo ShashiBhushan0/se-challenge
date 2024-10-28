@@ -6,19 +6,15 @@ option go_package = "github.com/shashibhushan06/aggregator";
 message QueryRequest {
   int64 start = 1;
   int64 end = 2;
-  string window = 3;  // Optional: time window for aggregation (e.g., 1m, 5m, 1h, 1d)
-  string aggregation = 4;  // Optional: type of aggregation (MIN, MAX, AVG, SUM)
+  string window = 3;  // time window for aggregation (e.g., 1m, 5m, 1h, 1d)
+  string aggregation = 4;  // type of aggregation (MIN, MAX, AVG, SUM)
 }
 
 // Data point representation
-message DataPoint {  
-  //google.protobuf.Timestamp startTime = 1;
-  //google.protobuf.Timestamp endTime = 2;
+message DataPoint {
   int64 startTime = 1;
   int64 endTime = 2;
   double value = 3;
-  //int64 timestamp = 1;
-  //double value = 2;
 }
 
 // Query response message
