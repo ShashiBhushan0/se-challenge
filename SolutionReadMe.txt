@@ -1,3 +1,5 @@
+This gRPC server will bootstrap the data for last 2 years. In the event of service restart it will fetch data from the last pulled data.
+
 Steps to run the project
 1.  Update docker-compose.yml for the following
     a. update the volume as per your file system.
