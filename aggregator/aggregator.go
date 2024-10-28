@@ -29,13 +29,10 @@ func (s *Server) query(startTime int64, endTime int64, aggregationWindow string,
 
 	switch timeType {
 	case "m":
-		// fmt.Println(timeValue, "Minutes")
 		timeDiff += val * 60
 	case "h":
-		// fmt.Println(timeValue, "Hours")
 		timeDiff += val * 60 * 60
 	case "d":
-		// fmt.Println(timeValue, "Days")
 		timeDiff += val * 24 * 60 * 60
 	}
 	dps := []*DataPoint{}
@@ -43,7 +40,6 @@ func (s *Server) query(startTime int64, endTime int64, aggregationWindow string,
 		if nextEndTime > endTime {
 			nextEndTime = endTime
 		}
-		// queryString := "select " + aggregationType + "(time) from data_points dp where time between " + startTime + " and " + endTime
 		queryString := fmt.Sprintf("select %v(value) from data_points dp where time between %v and %v", aggregationType, nextStartTime, nextEndTime)
 		fmt.Println(queryString)
 		resultRows, err := s.DB.Query(queryString)
@@ -63,8 +59,6 @@ func (s *Server) query(startTime int64, endTime int64, aggregationWindow string,
 
 		}
 	}
-	// s1 := DataPoint{StartTime: 21, EndTime: 22, Value: 20}
-	// dps = append(dps, &s1)
 	qresp := QueryResponse{Data: dps}
 	return &qresp, nil
 }
