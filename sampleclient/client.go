@@ -92,7 +92,7 @@ func main() {
 	fmt.Println("May be connected")
 	defer conn.Close()
 	agg := aggregator.NewTimeAggregatorServiceClient(conn)
-	queryRquest := aggregator.QueryRequest{Start: 1727443800, End: 1730034000, Window: "1d", Aggregation: "SUM"}
+	queryRquest := aggregator.QueryRequest{Start: startTime, End: endTime, Window: window, Aggregation: aggregation}
 	resp, err := agg.QueryData(context.Background(), &queryRquest)
 	if err != nil {
 		log.Fatal("Query Failed")

@@ -2,7 +2,8 @@ version: '3.8'
 
 services:
   my-grpc-server:
-    build: .
+    # build: .
+    image: my-grpc-server:latest
     ports:
       - "8009:8009"
     depends_on:

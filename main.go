@@ -1,4 +1,4 @@
-package client
+package main
 
 import (
 	"encoding/json"
@@ -32,12 +32,12 @@ type SeriesResponse struct {
 }
 
 func main() {
-	fmt.Println("Starting my grpc server")
-	time.Sleep(10 * time.Second)
 	StartService()
 }
 
 func StartService() {
+
+	fmt.Println("Initiating DB connection...")
 
 	db := getDbConnection()
 	defer db.Close()
@@ -61,7 +61,7 @@ func StartService() {
 }
 
 func keepUpdatingData(db *sql.DB, lastFetchTime time.Time) {
-	ticker := time.NewTicker(1 * time.Minute)
+	ticker := time.NewTicker(5 * time.Minute)
 	defer ticker.Stop()
 	run := false
 	if run {
@@ -83,16 +83,37 @@ func keepUpdatingData(db *sql.DB, lastFetchTime time.Time) {
 func bootstrapData(db *sql.DB) time.Time {
 
 	currentTime := time.Now()
-	// Calculate 2 years ago
-	twoYearsAgo := currentTime.AddDate(0, -1, 0)
 
-	fmt.Println(twoYearsAgo.Format("2006-01-02T15:04:05"), currentTime.Format("2006-01-02T15:04:05"))
+	queryString := "select max(time) from data_points dp"
+	fmt.Println(queryString)
+	resultRows, err := db.Query(queryString)
+	if err != nil {
+		log.Fatal("Query failed", err)
+	}
+	defer resultRows.Close()
+	lastTimestamp := currentTime.AddDate(-2, 0, 0)
+	for resultRows.Next() {
+		// var val sql.NullFloat64
+		var val sql.NullInt64
+		if err := resultRows.Scan(&val); err != nil {
+			fmt.Println("SQL rows Scan Failed")
+			break
+		}
+		if val.Int64 != 0 {
+			lastTimestamp = time.Unix(val.Int64, 0)
+			fmt.Println("Data found till ", lastTimestamp.Format("2006-01-02T15:04:05"))
+		} else {
+			fmt.Println("Database is empty. Boostrapping")
+		}
+	}
 
-	data := getTimeData(twoYearsAgo, currentTime)
+	fmt.Println("Updating data from ", lastTimestamp.Format("2006-01-02T15:04:05"), "to", currentTime.Format("2006-01-02T15:04:05"))
+
+	data := getTimeData(lastTimestamp, currentTime)
 	fmt.Println("Total responses = ", len(data.Result))
 
 	insertIntoDB(db, &data)
-	fmt.Println("Data bosstrapped")
+	fmt.Println("Data Updated")
 	return currentTime
 
 }
@@ -142,12 +163,16 @@ func getTimeData(startDate time.Time, endDate time.Time) SeriesResponse {
 
 func getDbConnection() *sql.DB {
 	// Create a database connection
+	time.Sleep(10 * time.Second)
 	connStr := "postgres://shashi:mysecretpassword@postgres:5432/postgres?sslmode=disable"
-	db, err := sql.Open("postgres", connStr)
+	var db *sql.DB
+	var err error
+
+	db, err = sql.Open("postgres", connStr)
+
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Error connecting to DB", err)
 	}
-	// defer db.Close()
 
 	// Create a table to store the data points (if it doesn't exist)
 	_, err = db.Exec("CREATE TABLE IF NOT EXISTS data_points (time BIGINT, value NUMERIC)")
