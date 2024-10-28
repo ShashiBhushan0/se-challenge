@@ -148,7 +148,7 @@ func getTimeData(startDate time.Time, endDate time.Time) SeriesResponse {
 	}
 	err = json.NewDecoder(resp.Body).Decode(&data)
 	if err != nil {
-		fmt.Println("Error: Failed", err)
+		fmt.Println("Error: Decode Failed", err)
 	}
 	return data
 }
@@ -182,23 +182,4 @@ func insertIntoDB(db *sql.DB, data *SeriesResponse) {
 			log.Println("Error inserting data point:", err)
 		}
 	}
-}
-
-func DemoTest() {
-
-	epoch := int64(1667011200)
-
-	// Convert epoch to time.Time object
-	t := time.Unix(epoch, 0) // nanoseconds can be set to a specific value if needed
-
-	// Format the time using desired layout string
-	formattedTime := t.Format("2006-01-02T15:04:05") // Replace with your desired layout
-
-	currentTime := time.Now()
-	// Calculate 2 years ago
-	twoYearsAgo := currentTime.AddDate(-2, 0, 0).Format("2006-01-02T15:04:05")
-
-	fmt.Println("Original epoch:", epoch)
-	fmt.Println("Converted time:", formattedTime)
-	fmt.Println(twoYearsAgo)
 }
