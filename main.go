@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 	"time"
 
@@ -10,6 +11,8 @@ import (
 	"log"
 
 	_ "github.com/lib/pq" // PostgreSQL driver
+	"github.com/shashibhushan06/aggregator/aggregator"
+	"google.golang.org/grpc"
 )
 
 // type SeriesResponse struct {
@@ -28,48 +31,81 @@ type SeriesResponse struct {
 	Result []DataPoint `json:"result"`
 }
 
-func main() {
-
-	// url := "https://api.edgecomenergy.net/core/asset/3662953a-1396-4996-a1b6-99a0c5e7a5de/series?start=2024-09-13T00:00:00&end=2024-09-17T00:00:00"
-
-	// Define the desired date range
-
-	bootstrapData()
-	// Code()
-
+func main1() {
+	fmt.Println("Starting my grpc server")
+	time.Sleep(10 * time.Second)
+	StartService()
 }
 
-func Code() {
+func StartService() {
+
 	db := getDbConnection()
 	defer db.Close()
 
-	startDate := time.Date(2024, 9, 13, 9, 0, 0, 0, time.UTC)
-	endDate := time.Date(2024, 9, 13, 10, 0, 0, 0, time.UTC)
-	data := getTimeData(startDate, endDate)
+	lastFetchTime := bootstrapData(db)
+	go keepUpdatingData(db, lastFetchTime)
 
-	insertIntoDB(db, &data)
+	lis, err := net.Listen("tcp", ":8009")
+	if err != nil {
+		log.Fatal("Listen failed")
+	}
+	grpcServer := grpc.NewServer()
 
-	fmt.Println("Data points inserted successfully!")
+	service := &aggregator.Server{DB: db}
+	aggregator.RegisterTimeAggregatorServiceServer(grpcServer, service)
+	err = grpcServer.Serve(lis)
+	if err != nil {
+		log.Fatal("Server failed")
+	}
+	fmt.Printf("Done!")
 }
 
-func bootstrapData() time.Time {
+func keepUpdatingData(db *sql.DB, lastFetchTime time.Time) {
+	ticker := time.NewTicker(1 * time.Minute)
+	defer ticker.Stop()
+	run := false
+	if run {
+		fmt.Println(db)
+	}
+
+	for range ticker.C {
+		fmt.Println("Executing function every 5 minutes...")
+		currentTime := time.Now()
+		// Call your desired function here
+		data := getTimeData(lastFetchTime, currentTime)
+		fmt.Println("Total responses = ", len(data.Result))
+		insertIntoDB(db, &data)
+		lastFetchTime = currentTime
+		fmt.Println("Data points inserted successfully", lastFetchTime)
+	}
+}
+
+func bootstrapData(db *sql.DB) time.Time {
 
 	currentTime := time.Now()
 	// Calculate 2 years ago
-	twoYearsAgo := currentTime.AddDate(-2, 0, 0)
-	// twoYearsAgo := currentTime.AddDate(0, 0, -2)
+	twoYearsAgo := currentTime.AddDate(0, -1, 0)
 
-	fmt.Println(twoYearsAgo.Format("2006-01-02T15:04:05"))
-	twoYearsAgo = twoYearsAgo.Add(5 * time.Minute)
-	fmt.Println(twoYearsAgo.Format("2006-01-02T15:04:05"))
+	fmt.Println(twoYearsAgo.Format("2006-01-02T15:04:05"), currentTime.Format("2006-01-02T15:04:05"))
+
 	data := getTimeData(twoYearsAgo, currentTime)
 	fmt.Println("Total responses = ", len(data.Result))
+
+	insertIntoDB(db, &data)
+	fmt.Println("Data bosstrapped")
 	return currentTime
 
 }
 
 func getTimeData(startDate time.Time, endDate time.Time) SeriesResponse {
+
+	// url := "https://api.edgecomenergy.net/core/asset/3662953a-1396-4996-a1b6-99a0c5e7a5de/series?start=2024-09-13T00:00:00&end=2024-09-17T00:00:00"
+
 	var data SeriesResponse
+
+	// startDate := time.Date(2024, 9, 13, 9, 0, 0, 0, time.UTC)
+	// endDate := time.Date(2024, 9, 13, 10, 0, 0, 0, time.UTC)
+	// data := getTimeData(startDate, endDate)
 
 	url := fmt.Sprintf("https://api.edgecomenergy.net/core/asset/3662953a-1396-4996-a1b6-99a0c5e7a5de/series?start=%s&end=%s",
 		startDate.Format("2006-01-02T15:04:05"),
@@ -106,7 +142,7 @@ func getTimeData(startDate time.Time, endDate time.Time) SeriesResponse {
 
 func getDbConnection() *sql.DB {
 	// Create a database connection
-	connStr := "postgres://shashi:mysecretpassword@localhost:5432/postgres?sslmode=disable"
+	connStr := "postgres://shashi:mysecretpassword@postgres:5432/postgres?sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)

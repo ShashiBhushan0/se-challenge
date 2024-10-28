@@ -1,6 +1,21 @@
 version: '3.8'
 
 services:
+  my-grpc-server:
+    build: .
+    ports:
+      - "8009:8009"
+    depends_on:
+      - postgres
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+    healthcheck:
+      test: ["CMD", "sleep", "10"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   postgres:
     image: postgres:latest
     environment:
